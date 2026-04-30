@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  songs        Song[]
+  sessions     Session[]
+}
+
+model Song {
+  id         String   @id @default(cuid())
+  title      String
+  artist     String?
+  youtubeUrl String?
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lyrics     Lyrics?
+  sections   Section[]
+
+  @@index([userId])
+}
+
+model Lyrics {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  songId    String   @unique
+  createdAt DateTime @default(now())
+
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model Section {
+  id        String       @id @default(cuid())
+  type      SectionType
+  content   String
+  order     Int
+  color     String?
+  songId    String
+
+  song      Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([songId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum SectionType {
+  VERSE
+  CHORUS
+  BRIDGE
+  INTRO
+  OUTRO
+  BUILD
+  DROP
+}

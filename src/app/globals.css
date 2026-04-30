@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-green: #22c55e;
+  --color-brand-black: #09090b;
+  --color-brand-zinc: #18181b;
+
+  /* Stage Mode Colors */
+  --color-stage-verse: #ffffff;
+  --color-stage-chorus: #facc15;
+  --color-stage-bridge: #60a5fa;
+  --color-stage-drop: #ef4444;
+}
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    @apply bg-brand-black flex flex-col text-white antialiased;
+    overflow-x: hidden;
+    font-family: "Inter", sans-serif;
+  }
+}
+
+.text-gradient-gray {
+  background: linear-gradient(135deg, #9ca3af 0%, #f3f4f6 50%, #9ca3af 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: inline-block;
+}
+
+.beam-container {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Estilo para Inputs Profissionais */
+.input-field {
+  @apply focus:border-brand-green/50 focus:ring-brand-green/10 w-full rounded-2xl border border-zinc-800/50 bg-black/40 py-4 pr-4 pl-12 text-white transition-all duration-300 outline-none placeholder:text-zinc-500 focus:ring-4;
+}
+
+.glass-card {
+  @apply bg-brand-zinc/30 rounded-[2.5rem] border border-white/5 shadow-2xl backdrop-blur-2xl;
+}
