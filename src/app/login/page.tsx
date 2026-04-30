@@ -1,21 +1,40 @@
 "use client";
 import React from "react";
-
+import { signIn } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, Mail, Lock, LogIn } from "lucide-react";
+import { Music2, Mail, Lock, LogIn, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const router = useRouter();
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulação de login bem-sucedido
-    toast.success("Login realizado com sucesso!");
-    router.push("/dashboard"); // Redireciona para o painel do usuário
+    setIsLoading(true);
+
+    try {
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast.error("Por favor, verifique seu e-mail e senha e tente novamente.");
+      } else {
+        toast.success("Login realizado com sucesso!");
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,6 +63,9 @@ export default function LoginPage() {
                   type="email" 
                   className="input-field"
                   placeholder="seu@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
                 />
               </div>
             </div>
@@ -55,12 +77,23 @@ export default function LoginPage() {
                   type="password" 
                   className="input-field"
                   placeholder="Sua senha"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
                 />
               </div>
             </div>
 
-            <button className="w-full bg-brand-green hover:bg-green-400 text-black font-black py-4 rounded-2xl transition-all shadow-[0_10px_30px_rgba(34,197,94,0.2)] active:scale-[0.97] flex items-center justify-center gap-2 mt-4">
-              ENTRAR <LogIn className="w-5 h-5" />
+            <button 
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-brand-green hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black py-4 rounded-2xl transition-all shadow-[0_10px_30px_rgba(34,197,94,0.2)] active:scale-[0.97] flex items-center justify-center gap-2 mt-4"
+            >
+              {isLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>ENTRAR <LogIn className="w-5 h-5" /></>
+              )}
             </button>
           </form>
 

@@ -15,22 +15,20 @@ const mapToSectionType = (type: string): SectionType => {
   return SectionType.VERSE;
 };
 
-export async function getUserSongs() {
+export async function deleteSong(id: string) {
   const user = await auth();
+
   if (!user) {
-    throw new Error("Usuário não autenticado. Faça login para continuar.");
+    throw new Error("Usuário não autenticado.");
   }
 
-  return await prisma.song.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
+  await prisma.song.deleteMany({
+    where: {
+      id,
+      userId: user.id,
+    },
   });
-}
 
-export async function deleteSong(id: string) {
-  await prisma.song.delete({
-    where: { id },
-  });
   revalidatePath("/dashboard");
 }
 
@@ -47,22 +45,10 @@ export async function createSong(data: {
     throw new Error("Usuário não autenticado. Faça login para continuar.");
   }
 
-  const userExists = await prisma.user.findUnique({
+  const userExists = await prisma.user.findFirst({
     where: { id: user.id },
   });
 
-  if (!userExists) {
-    console.warn("Usuário não encontrado. Criando usuário com ID:", user.id);
-
-    await prisma.user.create({
-      data: {
-        id: user.id,
-        email: user.email ?? "", // Garantir que seja uma string
-        passwordHash: "default", // Adicionar valor padrão
-        createdAt: new Date(),
-      },
-    });
-  }
 
   const song = await prisma.song.create({
     data: {
@@ -90,7 +76,7 @@ export async function createSong(data: {
   return song;
 }
 
-export async function fetchUserSongs() {
+export async function getUserSongs() {
   const user = await auth();
   if (!user) {
     throw new Error("Usuário não autenticado. Faça login para continuar.");
@@ -103,10 +89,24 @@ export async function fetchUserSongs() {
 }
 
 export async function fetchSongById(id: string) {
-  return await prisma.song.findUnique({
-    where: { id },
+  const user = await auth();
+  if (!user) {
+    throw new Error("Usuário não autenticado.");
+  }
+
+  const song = await prisma.song.findFirst({
+    where: { 
+      id,
+      userId: user.id // Ensure the user owns the song
+    },
     include: {
       sections: true,
     },
   });
+
+  if (!song) {
+    throw new Error("Música não encontrada ou acesso negado.");
+  }
+
+  return song;
 }

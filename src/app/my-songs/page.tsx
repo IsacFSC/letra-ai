@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { fetchUserSongs } from "@/app/actions/song-actions";
+import { getUserSongs } from "@/app/actions/song-actions"; // Ensure this matches the consolidated name
 
 export default function MySongsPage() {
   const [songs, setSongs] = React.useState<{
@@ -16,7 +16,7 @@ export default function MySongsPage() {
 
   React.useEffect(() => {
     async function loadSongs() {
-      const userSongs = await fetchUserSongs();
+      const userSongs = await getUserSongs();
       setSongs(userSongs);
     }
     loadSongs();
@@ -28,10 +28,8 @@ export default function MySongsPage() {
       <ul className="space-y-4">
         {songs.map((song) => (
           <li key={song.id} className="border p-4 rounded-lg">
-            <Link href={`/editor/${song.id}`}>
-              <a className="text-lg font-semibold text-blue-600 hover:underline">
-                {song.title} - {song.artist}
-              </a>
+            <Link href={`/editor/${song.id}`} className="text-lg font-semibold text-blue-600 hover:underline">
+              {song.title} - {song.artist}
             </Link>
           </li>
         ))}

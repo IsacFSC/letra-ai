@@ -8,11 +8,12 @@ import CredentialsProvider from "next-auth/providers/credentials";
 export { prisma };
 
 const credentialsSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string().min(6),
 });
 
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
   },
@@ -26,12 +27,12 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Credenciais inválidas");
+          return null;
         }
 
         const user = await prisma.user.findUnique({ where: { email: credentials.email } });
         if (!user || !(await bcrypt.compare(credentials.password, user.passwordHash || ""))) {
-          throw new Error("Credenciais inválidas");
+          return null;
         }
 
         return { id: user.id, email: user.email };

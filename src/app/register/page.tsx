@@ -1,21 +1,36 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
 import { Music2, User, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { registerUser } from "@/lib/register";
+import { signIn } from "next-auth/react";
 
 export default function RegisterPage() {
-  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleRegister = async (e: React.FormEvent) => {
+  async function handleRegister(e: React.FormEvent) {
     e.preventDefault();
-    toast.success("Conta criada com sucesso! Faça login para continuar.");
-    router.push("/login");
-  };
+
+    try {
+      await registerUser(email, password);
+
+      toast.success("Conta criada com sucesso!");
+
+      await signIn("credentials", {
+        email,
+        password,
+        redirect: true,
+        callbackUrl: "/dashboard",
+      });
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  }
 
   return (
     <main className="bg-brand-black relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden p-6">
@@ -56,6 +71,8 @@ export default function RegisterPage() {
                   className="input-field"
                   placeholder="seu@email.com"
                   required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
             </div>
@@ -68,6 +85,8 @@ export default function RegisterPage() {
                   className="input-field"
                   placeholder="Crie uma senha forte"
                   required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
             </div>
