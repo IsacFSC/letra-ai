@@ -1,20 +1,27 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
+import { fetchSongById, createSong, updateSong } from "@/app/actions/song-actions";
+import { useSearchParams } from "next/navigation";
+import React, { useState, useCallback, useRef } from "react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
 import { Search, Plus, Save, Youtube, ChevronLeft, Type, Loader2, Trash2, ArrowUp, ArrowDown, Sparkles, Music2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import MobileNavbar from "@/components/MobileNavbar";
-import { fetchYoutubeVideoInfo } from "@/services/youtubeService"; // Assumindo que este serviço será criado
-import { jsPDF } from "jspdf";
-import { saveRepertoryLocally } from "@/lib/uploadthing"; // Atualizado para usar saveRepertoryLocally diretamente
-
 import { fetchLyrics } from "@/services/lyricsService";
-import { createSong } from "@/app/actions/song-actions";
-import { useSearchParams } from "next/navigation";
+import { SectionType } from "@prisma/client";
 import { Suspense } from "react";
+
+const sectionTypeLabel: Record<SectionType, string> = {
+  VERSE: "Verso",
+  CHORUS: "Refrão",
+  BRIDGE: "Ponte",
+  OUTRO: "Final",
+  INTRO: "Introdução",
+  BUILD: "Construção",
+  DROP: "Queda",
+};
 
 function EditorContent() {
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -24,18 +31,91 @@ function EditorContent() {
     title: "",
     artist: "",
     youtubeUrl: "",
-    sections: [] as { id: string; type: string; content: string; order: number; color?: string }[],
+    sections: [] as { id: string; type: SectionType; label: string; content: string; order: number; color?: string }[],
   });
   const [nextVerseNumber, setNextVerseNumber] = useState(1);
   const [nextChorusNumber, setNextChorusNumber] = useState(1);
   const [nextBridgeNumber, setNextBridgeNumber] = useState(1);
+  const [nextIntroNumber, setNextIntroNumber] = useState(1);
+  const [nextBuildNumber, setNextBuildNumber] = useState(1);
+  const [nextDropNumber, setNextDropNumber] = useState(1);
 
   // Ref para as seções para rolagem
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const sectionColors: Record<string, string> = { "verso": "text-blue-300", "refrão": "text-green-300", "ponte": "text-purple-330", "final": "text-red-300" };
+  // Centralização de constantes de estilo
+  const sectionColors: Record<string, string> = { 
+    "verso": "text-blue-300", 
+    "refrão": "text-green-300", 
+    "ponte": "text-purple-300", // Corrigido de 330 para 300
+    "final": "text-red-300",
+    "introdução": "text-yellow-300",
+    "construção": "text-orange-300",
+    "queda": "text-pink-300",
+  };
 
   const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
+
+  React.useEffect(() => {
+    async function loadSong() {
+      if (!editId) return;
+
+      try {
+        const song = await fetchSongById(editId);
+
+        let vCount = 0;
+        let cCount = 0;
+        let bCount = 0;
+        let iCount = 0;
+        let uCount = 0;
+        let dCount = 0;
+
+        const mappedSections = song.sections.map((sec) => {
+          const baseLabel = sectionTypeLabel[sec.type as SectionType] || "Verso";
+          let label = baseLabel;
+
+          if (sec.type === SectionType.VERSE) label = `${baseLabel} ${++vCount}`;
+          else if (sec.type === SectionType.CHORUS) label = `${baseLabel} ${++cCount}`;
+          else if (sec.type === SectionType.BRIDGE) label = `${baseLabel} ${++bCount}`;
+          else if (sec.type === SectionType.INTRO) label = `${baseLabel} ${++iCount}`;
+          else if (sec.type === SectionType.BUILD) label = `${baseLabel} ${++uCount}`;
+          else if (sec.type === SectionType.DROP) label = `${baseLabel} ${++dCount}`;
+
+          return {
+            id: sec.id,
+            type: sec.type as SectionType,
+            label: label,
+            content: sec.content,
+            order: sec.order,
+            color: sec.color ?? undefined,
+          };
+        });
+
+        setFormData({
+          title: song.title,
+          artist: song.artist ?? "",
+          youtubeUrl: song.youtubeUrl ?? "",
+          sections: mappedSections,
+        });
+
+        // Sincroniza os contadores globais para novas adições
+        setNextVerseNumber(vCount + 1);
+        setNextChorusNumber(cCount + 1);
+        setNextBridgeNumber(bCount + 1);
+        setNextIntroNumber(iCount + 1);
+        setNextBuildNumber(uCount + 1);
+        setNextDropNumber(dCount + 1);
+
+        setIsAddingNew(true);
+      } catch (err) {
+        toast.error("Erro ao carregar música para edição");
+      }
+    }
+
+    loadSong();
+  }, [editId]);
+
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,8 +127,13 @@ function EditorContent() {
         title: formData.title,
         artist: formData.artist,
         youtubeUrl: formData.youtubeUrl,
-        sections: formData.sections,
-        lyrics: "", // opcional ou removido do schema se não usar
+        sections: formData.sections.map(s => ({
+          id: s.id,
+          type: s.type, // Enviamos o tipo técnico (VERSE, CHORUS, etc)
+          content: s.content,
+          order: s.order,
+          color: s.color
+        })),
       });
 
       toast.success("Música salva com sucesso!");
@@ -100,11 +185,13 @@ function EditorContent() {
     setSearching(true);
     try {
       const lyrics = await fetchLyrics(formData.artist, formData.title);
+      const initialType = SectionType.VERSE;
       setFormData({
         ...formData,
         sections: [{ 
           id: `verse-${nextVerseNumber}`, 
-          type: `Verso ${nextVerseNumber}`, 
+          type: initialType,
+          label: `Verso ${nextVerseNumber}`,
           content: lyrics, 
           order: 0,
           color: sectionColors.verso 
@@ -119,28 +206,46 @@ function EditorContent() {
     }
   };
 
-  const addSection = (type: string, content: string = "") => {
-    let sectionType = type;
+  const addSection = (baseType: "Verso" | "Refrão" | "Ponte" | "Final" | "Introdução" | "Construção" | "Queda", content: string = "") => {
+    let type: SectionType = SectionType.VERSE;
+    let label = "";
 
-    if (type === "Verso") {
-      sectionType = `Verso ${nextVerseNumber}`;
+    if (baseType === "Verso") {
+      type = SectionType.VERSE;
+      label = `Verso ${nextVerseNumber}`;
       setNextVerseNumber(nextVerseNumber + 1);
-    } else if (type === "Refrão") {
-      sectionType = `Refrão ${nextChorusNumber}`;
+    } else if (baseType === "Refrão") {
+      type = SectionType.CHORUS;
+      label = `Refrão ${nextChorusNumber}`;
       setNextChorusNumber(prev => prev + 1);
-    } else if (type === "Ponte") {
-      sectionType = `Ponte ${nextBridgeNumber}`;
-      setNextBridgeNumber(nextBridgeNumber + 1); // Corrigido para incrementar corretamente
-    } else if (type === "Final") {
-      sectionType = "Final";
+    } else if (baseType === "Ponte") {
+      type = SectionType.BRIDGE;
+      label = `Ponte ${nextBridgeNumber}`;
+      setNextBridgeNumber(nextBridgeNumber + 1);
+    } else if (baseType === "Final") {
+      type = SectionType.OUTRO;
+      label = "Final";
+    } else if (baseType === "Introdução") {
+      type = SectionType.INTRO;
+      label = `Introdução ${nextIntroNumber}`;
+      setNextIntroNumber(nextIntroNumber + 1);
+    } else if (baseType === "Construção") {
+      type = SectionType.BUILD;
+      label = `Construção ${nextBuildNumber}`;
+      setNextBuildNumber(nextBuildNumber + 1);
+    } else if (baseType === "Queda") {
+      type = SectionType.DROP;
+      label = `Queda ${nextDropNumber}`;
+      setNextDropNumber(nextDropNumber + 1);
     }
 
     const newSection = {
-      id: `${sectionType.toLowerCase().replace(/\s/g, '-')}-${Date.now()}`,
-      type: sectionType,
+      id: `${type.toLowerCase()}-${Date.now()}`,
+      type,
+      label,
       content,
       order: formData.sections.length, // Adiciona a ordem para manter a sequência
-      color: sectionColors[type.toLowerCase().split(' ')[0]] || sectionColors.verso,
+      color: sectionColors[baseType.toLowerCase()] || sectionColors.verso,
     };
 
     setFormData((prev) => ({
@@ -170,13 +275,19 @@ function EditorContent() {
 
       const updatedSections = prev.sections.filter((sec) => sec.id !== id);
 
-      // Ajustar os contadores com base no tipo da seção deletada
-      if (sectionToDelete.type.startsWith("Verso")) {
-        setNextVerseNumber(updatedSections.filter(sec => sec.type.startsWith("Verso")).length + 1);
-      } else if (sectionToDelete.type.startsWith("Refrão")) {
-        setNextChorusNumber(updatedSections.filter(sec => sec.type.startsWith("Refrão")).length + 1);
-      } else if (sectionToDelete.type.startsWith("Ponte")) {
-        setNextBridgeNumber(updatedSections.filter(sec => sec.type.startsWith("Ponte")).length + 1);
+      // Ajustar os contadores com base no tipo técnico
+      if (sectionToDelete.type === SectionType.VERSE) {
+        setNextVerseNumber(updatedSections.filter(sec => sec.type === SectionType.VERSE).length + 1);
+      } else if (sectionToDelete.type === SectionType.CHORUS) {
+        setNextChorusNumber(updatedSections.filter(sec => sec.type === SectionType.CHORUS).length + 1);
+      } else if (sectionToDelete.type === SectionType.BRIDGE) {
+        setNextBridgeNumber(updatedSections.filter(sec => sec.type === SectionType.BRIDGE).length + 1);
+      } else if (sectionToDelete.type === SectionType.INTRO) {
+        setNextIntroNumber(updatedSections.filter(sec => sec.type === SectionType.INTRO).length + 1);
+      } else if (sectionToDelete.type === SectionType.BUILD) {
+        setNextBuildNumber(updatedSections.filter(sec => sec.type === SectionType.BUILD).length + 1);
+      } else if (sectionToDelete.type === SectionType.DROP) {
+        setNextDropNumber(updatedSections.filter(sec => sec.type === SectionType.DROP).length + 1);
       }
 
       return {
@@ -274,6 +385,15 @@ function EditorContent() {
                     <button type="button" onClick={() => addSection("Final")} className="px-3 py-1 bg-red-700/30 text-red-300 rounded-lg text-xs hover:bg-red-700/50 transition-colors">
                       + Final
                     </button>
+                    <button type="button" onClick={() => addSection("Introdução")} className="px-3 py-1 bg-yellow-700/30 text-yellow-300 rounded-lg text-xs hover:bg-yellow-700/50 transition-colors">
+                      + Intro
+                    </button>
+                    <button type="button" onClick={() => addSection("Construção")} className="px-3 py-1 bg-orange-700/30 text-orange-300 rounded-lg text-xs hover:bg-orange-700/50 transition-colors">
+                      + Build
+                    </button>
+                    <button type="button" onClick={() => addSection("Queda")} className="px-3 py-1 bg-pink-700/30 text-pink-300 rounded-lg text-xs hover:bg-pink-700/50 transition-colors">
+                      + Drop
+                    </button>
                   </div>
                 </div>
                 {formData.sections.length === 0 ? (
@@ -283,7 +403,7 @@ function EditorContent() {
                     {formData.sections.map((section, index) => (
                       <div key={section.id} ref={(el) => { sectionRefs.current[section.id] = el; }} className="relative group">
                         <div className="flex items-center justify-between mb-1">
-                          <span className={`font-bold ${section.color}`}>{section.type}</span>
+                          <span className={`font-bold ${section.color}`}>{section.label}</span>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                             <button type="button" onClick={() => moveSection(section.id, 'up')} disabled={index === 0} className="p-1 rounded-md hover:bg-white/10 disabled:opacity-50">
                               <ArrowUp className="h-4 w-4 text-zinc-400" />

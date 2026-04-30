@@ -1,16 +1,10 @@
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
-import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 export { prisma };
-
-const credentialsSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
-});
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,

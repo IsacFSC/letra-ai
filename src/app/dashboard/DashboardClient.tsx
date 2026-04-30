@@ -1,29 +1,44 @@
 "use client";
 
 import React, { useState } from "react";
+import { signOut } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus } from "lucide-react";
+import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong } from "@/app/actions/song-actions";
 
+type Song = {
+  id: string;
+  title: string;
+  artist: string | null;
+};
+
 interface DashboardClientProps {
   user: { email: string | null };
-  initialSongs: any[];
+  initialSongs: Song[];
 }
 
 export default function DashboardClient({ user, initialSongs }: DashboardClientProps) {
   const [tab, setTab] = useState<"songs" | "profile">("songs");
   const [songs, setSongs] = useState(initialSongs);
 
+  const [loadingId, setLoadingId] = useState<string | null>(null);
+
   const handleDelete = async (id: string) => {
+    if (!confirm("Tem certeza?")) return;
+
+    setLoadingId(id);
+
     try {
       await deleteSong(id);
-      setSongs(songs.filter((s) => s.id !== id));
+      setSongs((prev) => prev.filter((s) => s.id !== id));
       toast.success("Música removida!");
-    } catch (error) {
+    } catch {
       toast.error("Erro ao excluir.");
+    } finally {
+      setLoadingId(null);
     }
   };
 
@@ -36,7 +51,7 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
             <Music2 className="text-brand-green h-7 w-7" />
             <h2 className="text-gradient-gray text-2xl font-black tracking-tighter">Letra.AI</h2>
           </div>
-          <button onClick={() => toast.error("Logout simulado")} className="text-zinc-400 hover:text-red-400 transition-colors">
+          <button onClick={() => signOut({ callbackUrl: "/login" })} title="Sair" className="text-zinc-400 hover:text-red-400 transition-colors">
             <LogOut className="h-6 w-6" />
           </button>
         </nav>
@@ -64,15 +79,21 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
               ) : (
                 songs.map((song) => (
                   <div key={song.id} className="glass-card flex items-center justify-between p-5">
-                    <div className="flex flex-col">
-                      <h3 className="font-bold text-white text-lg">{song.title}</h3>
-                      <p className="text-zinc-500">{song.artist}</p>
+                    <div className="flex flex-col justify-center items-center">
+                      <h3 className="font-bold text-white text-lg pr-3">{song.title}</h3>
+                      <p className="text-zinc-500 pr-3">{song.artist}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Link href={`/editor/${song.id}`} className="p-2 bg-white/5 rounded-lg hover:text-brand-green transition-colors">
+                      <Link
+                        href={`/editor/${song.id}`}
+                        className="p-2 bg-brand-green/20 text-brand-green rounded-lg hover:bg-brand-green/30"
+                      >
+                        <MicVocal />
+                      </Link>
+                      <Link href={`/editor?edit=${song.id}`} title="Editar Letra" className="p-2 bg-white/10 hover:bg-white/8 rounded-lg hover:text-blue-400 transition-colors">
                         <Edit3 className="h-5 w-5" />
                       </Link>
-                      <button onClick={() => handleDelete(song.id)} className="p-2 bg-white/5 rounded-lg hover:text-red-500 transition-colors">
+                      <button onClick={() => handleDelete(song.id)} className="p-2 bg-white/10 hover:bg-white/8 rounded-lg hover:text-red-500 transition-colors" disabled={loadingId === song.id}>
                         <Trash2 className="h-5 w-5" />
                       </button>
                     </div>

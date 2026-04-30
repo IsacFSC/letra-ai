@@ -1,30 +1,13 @@
 import { useState } from "react";
 import { saveAs } from "file-saver";
 
-const UPLOADTHING_SECRET = process.env.UPLOADTHING_SECRET;
-const UPLOADTHING_APP_ID = process.env.UPLOADTHING_APP_ID;
 const UPLOADTHING_TOKEN = process.env.UPLOADTHING_TOKEN;
 
-// console.log("UPLOADTHING_SECRET:", UPLOADTHING_SECRET || "não definido");
-// console.log("UPLOADTHING_APP_ID:", UPLOADTHING_APP_ID || "não definido");
-// console.log("UPLOADTHING_TOKEN:", UPLOADTHING_TOKEN || "não definido");
-
 if (typeof window === "undefined") {
-  if (!UPLOADTHING_SECRET || !UPLOADTHING_APP_ID || !UPLOADTHING_TOKEN) {
-    console.warn("As variáveis de ambiente do UploadThing não estão configuradas corretamente.");
+  if (!UPLOADTHING_TOKEN) {
+    console.warn("Token do serviço de upload não configurado.");
   }
 }
-
-// Remover validações específicas
-// if (!UPLOADTHING_APP_ID) {
-//   throw new Error("UPLOADTHING_APP_ID não está definido. Verifique suas variáveis de ambiente.");
-// }
-
-// if (!UPLOADTHING_TOKEN) {
-//   throw new Error("UPLOADTHING_TOKEN não está definido. Verifique suas variáveis de ambiente.");
-// }
-
-console.log("Cabeçalho Authorization:", `Bearer ${UPLOADTHING_TOKEN}`);
 
 export const saveRepertoryLocally = async (file: File): Promise<{ url: string }[]> => {
   try {
