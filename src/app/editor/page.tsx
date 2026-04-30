@@ -39,62 +39,31 @@ function EditorContent() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Iniciando processo de salvar música", formData);
-    const loadingToast = toast.loading("Gerando PDF e salvando...");
+
+    const loadingToast = toast.loading("Salvando música...");
 
     try {
-      // 1. Gerar PDF localmente
-      const doc = new jsPDF();
-      doc.setFontSize(20);
-      doc.text(`${formData.title} - ${formData.artist}`, 10, 20);
-      doc.setFontSize(12);
-
-      let y = 40;
-      formData.sections.forEach((section) => {
-        doc.setFont("helvetica", "bold");
-        doc.text(section.type, 10, y);
-        y += 7;
-        doc.setFont("helvetica", "normal");
-        const lines = doc.splitTextToSize(section.content, 180);
-        doc.text(lines, 10, y);
-        y += lines.length * 7 + 10;
-        if (y > 270) {
-          doc.addPage();
-          y = 20;
-        }
-      });
-
-      const pdfBlob = doc.output("blob");
-      const pdfFile = new File([pdfBlob], `${formData.title}.pdf`, { type: "application/pdf" });
-
-      console.log("PDF gerado com sucesso", pdfFile);
-
-      // 2. Upload para UploadThing (usando saveRepertoryLocally diretamente)
-      const uploadRes = await saveRepertoryLocally(pdfFile) as { url: string }[];
-      console.log("Upload concluído", uploadRes);
-
-      const pdfUrl = uploadRes[0].url;
-      console.log("URL do PDF obtida", pdfUrl);
-
-      // 3. Salvar no Banco
       await createSong({
-        ...formData,
-        pdfUrl,
-        lyrics: "Adicione as letras aqui", // Substitua pela lógica correta para obter as letras
+        title: formData.title,
+        artist: formData.artist,
+        youtubeUrl: formData.youtubeUrl,
+        sections: formData.sections,
+        lyrics: "", // opcional ou removido do schema se não usar
       });
-      console.log("Música salva com sucesso no banco de dados");
 
-      toast.dismiss(loadingToast);
-      toast.success("Música salva no seu repertório!");
+      toast.success("Música salva com sucesso!");
       setIsAddingNew(false);
-      setFormData({ title: "", artist: "", youtubeUrl: "", sections: [] });
-      setNextVerseNumber(1);
-      setNextChorusNumber(1);
-      setNextBridgeNumber(1);
-    } catch (error) {
-      console.error("Erro ao salvar música:", error);
+
+      setFormData({
+        title: "",
+        artist: "",
+        youtubeUrl: "",
+        sections: [],
+      });
+    } catch (err) {
+      toast.error("Erro ao salvar música");
+    } finally {
       toast.dismiss(loadingToast);
-      toast.error("Erro ao salvar música.");
     }
   };
 
