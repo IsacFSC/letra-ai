@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 
 import MobileNavbar from "@/components/MobileNavbar";
 import { fetchLyrics } from "@/services/lyricsService";
-import { SectionType } from "@prisma/client";
+import { SectionType } from "src/types/sectionTypes";
 
 // =========================
 // TIPOS FLEXÍVEIS (sem DTO)
