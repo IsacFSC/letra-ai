@@ -2,8 +2,8 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { SectionType } from "@prisma/client";
 import { auth } from "@/lib/auth";
+import { SectionType } from "src/types/sectionTypes";
 
 type SongWithSections = {
   id: string;
