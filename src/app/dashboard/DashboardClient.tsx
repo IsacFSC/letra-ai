@@ -85,7 +85,7 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                     </div>
                     <div className="flex gap-2">
                       <Link
-                        href={`/editor/${song.id}`}
+                        href={`/stage/${song.id}`}
                         className="p-2 bg-brand-green/20 text-brand-green rounded-lg hover:bg-brand-green/30"
                       >
                         <MicVocal />

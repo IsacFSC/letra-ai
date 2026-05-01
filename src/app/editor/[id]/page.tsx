@@ -2,7 +2,6 @@ import { fetchSongById } from "@/app/actions/song-actions";
 import { SectionType } from "@prisma/client";
 
 const sectionTypeLabel: Record<SectionType, string> = {
-  
   VERSE: "Verso",
   CHORUS: "Refrão",
   BRIDGE: "Ponte",
@@ -12,9 +11,15 @@ const sectionTypeLabel: Record<SectionType, string> = {
   DROP: "Queda",
 };
 
-export default async function SongStagePage({ params }: { params: { id: string } }) {
+type AwaitedParams<T> = {
+  params: Promise<T>;
+};
+
+const SongStagePage = async ({ params }: AwaitedParams<{ id: string }>) => {
+  const { id } = await params;
+
   try {
-    const song = await fetchSongById(params.id);
+    const song = await fetchSongById(id);
 
     if (!song) {
       return <div>Música não encontrada</div>;
@@ -28,11 +33,11 @@ export default async function SongStagePage({ params }: { params: { id: string }
 
         <div className="space-y-6">
           {(() => {
-            let counts = { VERSE: 0, CHORUS: 0, BRIDGE: 0, OUTRO: 0, INTRO: 0, BUILD: 0, DROP: 0 };
+            let counts: Record<string, number> = { VERSE: 0, CHORUS: 0, BRIDGE: 0, OUTRO: 0, INTRO: 0, BUILD: 0, DROP: 0 };
             return song.sections.map((section) => {
               const type = section.type as SectionType;
               counts[type]++;
-              
+
               let displayLabel = sectionTypeLabel[type] || type;
               // Number all types except OUTRO, consistent with editor's numbering logic
               if (type !== SectionType.OUTRO && type !== SectionType.INTRO && type !== SectionType.BUILD && type !== SectionType.DROP) {
@@ -58,4 +63,6 @@ export default async function SongStagePage({ params }: { params: { id: string }
     console.error(error);
     return <div>Erro ao carregar música</div>;
   }
-}
+};
+
+export default SongStagePage;

@@ -72,7 +72,7 @@ export default function MobileNavbar({ sections, scrollToSection }: MobileNavbar
       <Link href="/dashboard">
         <button className="flex flex-col items-center text-zinc-400 hover:text-white transition-colors">
           <ListMusic className="h-5 w-5" />
-          <span className="text-xs">Minhas Músicas</span>
+          <span className="text-xs">Playlist</span>
         </button>
       </Link>
     </nav>
