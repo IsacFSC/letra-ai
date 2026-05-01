@@ -15,6 +15,17 @@ const sectionColors: Record<string, string> = {
   DROP: "text-pink-300",
 };
 
+// Traduções para os tipos de seção
+const sectionLabels: Record<string, string> = {
+  VERSE: "Verso",
+  CHORUS: "Refrão",
+  BRIDGE: "Ponte",
+  INTRO: "Introdução",
+  OUTRO: "Final",
+  BUILD: "Construção",
+  DROP: "Queda",
+};
+
 type Section = {
   id: string;
   type: string;
@@ -119,7 +130,7 @@ export default function StagePageClient({ song }: { song: Song }) {
                 sectionColors[section.type] || "text-zinc-400"
               }`}
             >
-              {section.type}
+              {sectionLabels[section.type] || section.type}
             </h3>
 
             {section.content.split("\n").map((line, i) => (
@@ -192,14 +203,14 @@ export default function StagePageClient({ song }: { song: Song }) {
 
       {/* navegação por seção */}
       {!focusMode && (
-        <div className="fixed bottom-20 left-0 right-0 flex gap-2 overflow-x-auto px-3">
+        <div className="fixed bottom-13 left-0 right-0 flex gap-2 overflow-x-auto px-3 bg-black py-2">
           {song.sections.map((sec) => (
             <button
               key={sec.id}
               onClick={() => scrollToSection(sec.id)}
-              className="px-3 py-1 text-xs bg-white/10 rounded-full"
+              className="px-3 py-1 text-xs bg-emerald-800 rounded-full"
             >
-              {sec.type}
+              {sectionLabels[sec.type] || sec.type}
             </button>
           ))}
         </div>

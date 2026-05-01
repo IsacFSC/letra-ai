@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
 import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { deleteSong } from "@/app/actions/song-actions";
+import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
 
 type Song = {
   id: string;
@@ -23,7 +23,9 @@ interface DashboardClientProps {
 export default function DashboardClient({ user, initialSongs }: DashboardClientProps) {
   const [tab, setTab] = useState<"songs" | "profile">("songs");
   const [songs, setSongs] = useState(initialSongs);
-
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
@@ -41,6 +43,27 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
       setLoadingId(null);
     }
   };
+
+  const fetchSongs = async (append = false) => {
+    setLoading(true);
+    try {
+      const newSongs = await getUserSongs({
+        search,
+        skip: append ? songs.length : 0,
+        take: 10,
+      });
+      setSongs((prev) => (append ? [...prev, ...newSongs] : newSongs));
+      setHasMore(newSongs.length === 10);
+    } catch {
+      toast.error("Erro ao carregar músicas.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSongs();
+  }, [search]);
 
   return (
     <main className="bg-brand-black relative flex min-h-svh w-full flex-col overflow-hidden">
@@ -74,8 +97,15 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
 
           {tab === "songs" ? (
             <div className="grid gap-4">
+              <input
+                type="text"
+                placeholder="Buscar músicas..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input-field mb-4"
+              />
               {songs.length === 0 ? (
-                <p className="text-zinc-500 text-center py-10">Nenhuma música salva ainda.</p>
+                <p className="text-zinc-500 text-center py-10">Nenhuma música encontrada.</p>
               ) : (
                 songs.map((song) => (
                   <div key={song.id} className="glass-card flex items-center justify-between p-5">
@@ -100,6 +130,15 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                   </div>
                 ))
               )}
+              {hasMore && (
+                <button
+                  onClick={() => fetchSongs(true)}
+                  disabled={loading}
+                  className="w-full bg-brand-green text-black font-black py-3 rounded-xl hover:bg-green-400 transition-all mt-4"
+                >
+                  {loading ? "Carregando..." : "Exibir mais"}
+                </button>
+              )}
             </div>
           ) : (
             <div className="glass-card p-8 max-w-md mx-auto space-y-6">
@@ -109,7 +148,6 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                 </div>
                 <p className="text-zinc-400">{user.email}</p>
               </div>
-              
               <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); toast.success("Senha atualizada!"); }}>
                 <h3 className="text-xl font-bold flex items-center gap-2"><Key className="h-5 w-5" /> Alterar Senha</h3>
                 <input type="password" placeholder="Senha Atual" className="input-field" required />

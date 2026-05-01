@@ -151,16 +151,35 @@ export async function updateSong(
 
   return song;
 }
+
 /* =========================
    📚 GET USER SONGS
 ========================= */
-export async function getUserSongs() {
+export async function getUserSongs({
+  search = "",
+  skip = 0,
+  take = 10,
+}: {
+  search?: string;
+  skip?: number;
+  take?: number;
+} = {}) {
   const user = await requireUser();
 
-  return prisma.song.findMany({
-    where: { userId: user.id },
+  const songs = await prisma.song.findMany({
+    where: {
+      userId: user.id,
+      OR: [
+        { title: { contains: search, mode: "insensitive" } },
+        { artist: { contains: search, mode: "insensitive" } },
+      ],
+    },
+    skip,
+    take,
     orderBy: { createdAt: "desc" },
   });
+
+  return songs;
 }
 
 /* =========================
