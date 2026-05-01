@@ -13,7 +13,7 @@ export default function LandingPage() {
       <MotionFadeIn>
         <div className="w-full max-w-2xl space-y-8 text-center">
           <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full border border-brand-green/20 bg-brand-green/10 px-4 py-2 text-sm font-bold text-brand-green">
-            <Star className="h-4 w-4 fill-brand-green" /> PWA MOBILE-FIRST
+            <Star className="h-4 w-4 fill-brand-green" /> Para ensaios e palcos ao vivo
           </div>
           
           <h1 className="text-gradient-gray block text-6xl font-black leading-tight tracking-tighter md:text-8xl">

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, Mic2Icon, Pause, Play, TargetIcon, TestTube } from "lucide-react";
+import { Updock } from "next/font/google";
 
 // 🎨 cores por tipo
 const sectionColors: Record<string, string> = {
@@ -106,20 +107,20 @@ export default function StagePageClient({ song }: { song: Song }) {
       {!focusMode && (
         <div className="p-4 border-b border-white/10 flex items-center">
           <button onClick={() => router.push("/dashboard")}>
-            <ArrowLeftIcon className="h-5 w-5 text-zinc-400" />
+            <ArrowLeftIcon className="h-6 w-6 text-zinc-400" />
           </button>
-          <div className="flex-1 items-center inline-block justify-center" >
-            <h1 className="text-center font-bold truncate">
+          <div className="flex-1 items-center inline-block justify-center mx-auto" >
+            <h1 className="text-center font-bold line-clamp-1 w-64">
                 {song.title}
             </h1>
-            <p className="text-center text-xs text-zinc-500 truncate">
+            <p className="text-center text-xs text-zinc-500 line-clamp-1 w-64">
                 {song.artist}
             </p>
           </div>
           <button 
             className="ml-auto bg-white/15 px-1.5 py-1 text-xs rounded"
             onClick={() => setFocusMode(true)}>
-            <Mic2Icon className="h-4 w-4 text-emerald-500" />
+            <Mic2Icon className="h-6 w-6 text-emerald-500" />
           </button>
         </div>
       )}
@@ -160,11 +161,11 @@ export default function StagePageClient({ song }: { song: Song }) {
         <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 p-3 flex flex-wrap gap-2 items-center justify-between">
           
           {/* fonte */}
-          <div className="flex gap-2">
-            <button onClick={() => setFontSize((s) => Math.max(18, s - 2))}>
+          <div className="flex gap-2 items-start">
+            <button className="rounded-full px-1.5 py-1 font-serif border border-white bg-zinc-800" onClick={() => setFontSize((s) => Math.max(18, s - 2))}>
               A-
             </button>
-            <button onClick={() => setFontSize((s) => Math.min(48, s + 2))}>
+            <button className="rounded-full px-1 py-1 font-serif border border-white bg-zinc-800" onClick={() => setFontSize((s) => Math.min(48, s + 2))}>
               A+
             </button>
           </div>
@@ -172,12 +173,13 @@ export default function StagePageClient({ song }: { song: Song }) {
           {/* play scroll */}
           <button
             onClick={() => setAutoScroll((v) => !v)}
-            className="p-2 rounded-full bg-white/10"
+            className="rounded-full bg-white/10"
             >
             {autoScroll ? <Pause size={18} /> : <Play size={18} />}
           </button>
-          <div className="flex items-center gap-3 w-52">
-            <Play className="w-4 h-4 text-zinc-400" />
+          <div className="block justify-center mx-auto items-center gap-2">
+            <p className="text-xs font-sans">velocidade</p>
+            {/* <Play className="w-4 h-4 text-zinc-400" /> */}
             
             <input
                 type="range"
@@ -189,9 +191,9 @@ export default function StagePageClient({ song }: { song: Song }) {
                 className="flex-1 accent-emerald-500"
             />
 
-            <span className=" hidden text-xs text-zinc-400 w-12 text-right">
+            {/* <span className=" hidden text-xs text-zinc-400 w-12 text-right">
                 {Math.round(speed)}
-            </span>
+            </span> */}
           </div>
 
           {/* youtube */}
@@ -200,14 +202,14 @@ export default function StagePageClient({ song }: { song: Song }) {
               href={song.youtubeUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-red-500 rounded-lg transition-colors"
+              className="p-0.5 bg-zinc-800 hover:bg-zinc-700 text-red-500 rounded-lg transition-colors"
               aria-label="Abrir no YouTube"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
-                className="w-5 h-5"
+                className="w-6 h-6"
               >
                 <path d="M21.8 8s-.2-1.4-.8-2c-.7-.8-1.5-.8-1.9-.9C16.4 5 12 5 12 5h0s-4.4 0-7.1.1c-.4.1-1.2.1-1.9.9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.6C2 14.4 2.2 16 2.2 16s.2 1.4.8 2c.7.8 1.6.8 2 .9 1.5.1 6.9.1 6.9.1s4.4 0 7.1-.1c.4-.1 1.2-.1 1.9-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.6C22 9.6 21.8 8 21.8 8zM9.8 14.6V9.4l5.2 2.6-5.2 2.6z" />
               </svg>
