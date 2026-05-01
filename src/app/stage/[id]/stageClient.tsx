@@ -178,7 +178,7 @@ export default function StagePageClient({ song }: { song: Song }) {
             {autoScroll ? <Pause size={18} /> : <Play size={18} />}
           </button>
           <div className="block justify-center mx-auto items-center gap-2">
-            <p className="text-xs font-sans">velocidade</p>
+            
             {/* <Play className="w-4 h-4 text-zinc-400" /> */}
             
             <input
