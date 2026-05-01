@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, Mic2Icon, Pause, Play, TargetIcon } from "lucide-react";
+import { ArrowLeftIcon, Mic2Icon, Pause, Play, TargetIcon, TestTube } from "lucide-react";
 
 // 🎨 cores por tipo
 const sectionColors: Record<string, string> = {
@@ -50,6 +50,19 @@ export default function StagePageClient({ song }: { song: Song }) {
 
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // ✅ Cálculo dinâmico das seções com labels numerados (igual ao editor)
+  const sectionsWithLabels = React.useMemo(() => {
+    const counts: Record<string, number> = {};
+    return song.sections.map((sec) => {
+      const type = sec.type;
+      counts[type] = (counts[type] || 0) + 1;
+      return {
+        ...sec,
+        label: `${sectionLabels[type] || type} ${counts[type]}`,
+      };
+    });
+  }, [song.sections]);
 
   const scrollToSection = (id: string) => {
     sectionRefs.current[id]?.scrollIntoView({
@@ -117,7 +130,7 @@ export default function StagePageClient({ song }: { song: Song }) {
         className="flex-1 overflow-y-auto px-5 pb-32 pt-6"
         style={{ fontSize }}
       >
-        {song.sections.map((section) => (
+        {sectionsWithLabels.map((section) => (
           <div
             key={section.id}
             ref={(el) => {
@@ -130,7 +143,7 @@ export default function StagePageClient({ song }: { song: Song }) {
                 sectionColors[section.type] || "text-zinc-400"
               }`}
             >
-              {sectionLabels[section.type] || section.type}
+              {section.label}
             </h3>
 
             {section.content.split("\n").map((line, i) => (
@@ -186,31 +199,40 @@ export default function StagePageClient({ song }: { song: Song }) {
             <a
               href={song.youtubeUrl}
               target="_blank"
-              className="text-red-400"
+              rel="noopener noreferrer"
+              className="p-2 bg-zinc-800 hover:bg-zinc-700 text-red-500 rounded-lg transition-colors"
+              aria-label="Abrir no YouTube"
             >
-              ▶
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5"
+              >
+                <path d="M21.8 8s-.2-1.4-.8-2c-.7-.8-1.5-.8-1.9-.9C16.4 5 12 5 12 5h0s-4.4 0-7.1.1c-.4.1-1.2.1-1.9.9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.6C2 14.4 2.2 16 2.2 16s.2 1.4.8 2c.7.8 1.6.8 2 .9 1.5.1 6.9.1 6.9.1s4.4 0 7.1-.1c.4-.1 1.2-.1 1.9-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.6C22 9.6 21.8 8 21.8 8zM9.8 14.6V9.4l5.2 2.6-5.2 2.6z" />
+              </svg>
             </a>
           )}
 
-          {/* foco */}
-          <button 
-            className="ml-auto bg-white/15 px-1.5 py-1 text-xs rounded"
-            onClick={() => setFocusMode(true)}>
-            <TargetIcon className="h-4 w-4 text-emerald-500 bg-black rounded-full" />
-          </button>
+            {/* foco
+            <button 
+              className="ml-auto bg-white/15 px-1.5 py-1 text-xs rounded"
+              onClick={() => setFocusMode(true)}>
+              <TargetIcon className="h-4 w-4 text-emerald-500 bg-black rounded-full" />
+            </button> */}
         </div>
       )}
 
       {/* navegação por seção */}
       {!focusMode && (
         <div className="fixed bottom-20 left-0 right-0 flex gap-2 overflow-x-auto px-3 bg-black py-2">
-          {song.sections.map((sec) => (
+          {sectionsWithLabels.map((sec) => (
             <button
               key={sec.id}
               onClick={() => scrollToSection(sec.id)}
-              className="px-3 py-1 text-xs bg-emerald-800 rounded-full"
+              className="px-3 py-1 text-xs bg-emerald-800 rounded-full whitespace-nowrap"
             >
-              {sectionLabels[sec.type] || sec.type}
+              {sec.label}
             </button>
           ))}
         </div>

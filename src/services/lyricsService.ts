@@ -7,7 +7,9 @@ export async function fetchLyrics(
   title: string,
 ): Promise<string> {
   try {
-    const response = await axios.get(`${API_URL}/${artist}/${title}`);
+    const encodedArtist = encodeURIComponent(artist);
+    const encodedTitle = encodeURIComponent(title);
+    const response = await axios.get(`${API_URL}/${encodedArtist}/${encodedTitle}`);
     return response.data.lyrics;
   } catch (error) {
     console.error("Erro ao buscar letras:", error);

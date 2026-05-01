@@ -11,7 +11,9 @@ const StagePage = async ({ params }: AwaitedParams<{ id: string }>) => {
   const song = await prisma.song.findFirst({
     where: { id },
     include: {
-      sections: true,
+      sections: {
+        orderBy: { order: 'asc' }
+      },
     },
   });
 
