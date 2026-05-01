@@ -203,7 +203,7 @@ export default function StagePageClient({ song }: { song: Song }) {
 
       {/* navegação por seção */}
       {!focusMode && (
-        <div className="fixed bottom-13 left-0 right-0 flex gap-2 overflow-x-auto px-3 bg-black py-2">
+        <div className="fixed bottom-20 left-0 right-0 flex gap-2 overflow-x-auto px-3 bg-black py-2">
           {song.sections.map((sec) => (
             <button
               key={sec.id}
