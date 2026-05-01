@@ -4,7 +4,6 @@
     "build": "next build",
     "start": "next start",
     "postinstall": "prisma generate"
-}
   },
   "prisma": {
     "schema": "prisma/schema.prisma"
