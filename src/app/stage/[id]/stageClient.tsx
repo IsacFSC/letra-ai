@@ -232,7 +232,7 @@ export default function StagePageClient({ song }: { song: Song }) {
             <button
               key={sec.id}
               onClick={() => scrollToSection(sec.id)}
-              className="px-3 py-1 text-xs bg-emerald-800 rounded-full whitespace-nowrap"
+              className="px-3 py-1 text-xs bg-purple-800 rounded-full whitespace-nowrap"
             >
               {sec.label}
             </button>

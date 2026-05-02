@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal } from "lucide-react";
+import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
@@ -97,13 +97,16 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
 
           {tab === "songs" ? (
             <div className="grid gap-4">
-              <input
-                type="text"
-                placeholder="Buscar músicas..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="input-field mb-4 lg:w-96 lg:mx-auto"
-              />
+              <div className="relative group items-center flex">
+                <FileMinus className=" absolute left-4 top-1/3 -translate-y-1/3 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Buscar músicas..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="input-field w-full lg:w-96 mx-auto"
+                />
+              </div>
               {songs.length === 0 ? (
                 <p className="text-zinc-500 text-center py-10">Nenhuma música encontrada.</p>
               ) : (
@@ -162,8 +165,8 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
       </MotionFadeIn>
 
       {/* Floating Action Button para Nova Música */}
-      <div className="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-20 items-center justify-center">
-        <Link href="/editor?new=true" className="bg-brand-green flex items-center justify-center gap-2 rounded-4xl px-4 py-2.5 font-black text-black shadow-md shadow-green-500/50 hover:bg-green-400 transition-all">
+      <div className="fixed bottom-10 left-1/2 transform mx-auto text-center -translate-x-1/2 z-50 items-center justify-center">
+        <Link href="/editor?new=true" className="bg-brand-green flex items-center justify-center gap-2 rounded-4xl px-2 py-2.5 font-black text-black shadow-md shadow-green-500/50 hover:bg-green-400 transition-all">
           <Plus className="h-6 w-6" /> NOVA MÚSICA
         </Link>
       </div>

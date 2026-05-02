@@ -13,6 +13,8 @@ import {
   ChevronLeft,
   Type,
   Music2,
+  Disc2,
+  PersonStanding,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -344,24 +346,32 @@ export default function EditorClient({
           </button>
         </div>
 
-        <input
-          className="w-full p-2 bg-zinc-900 rounded"
-          placeholder="Título da música"
-          value={formData.title}
-          onChange={(e) =>
-            setFormData({ ...formData, title: e.target.value })
-          }
-        />
-
-        <div className="flex gap-2">
+        <div className="relative group">
+          <Disc2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <input
-            className="flex-1 p-2 bg-zinc-900 rounded"
-            placeholder="Artista"
-            value={formData.artist ?? ""}
+            className="w-full p-2 pl-10 bg-zinc-900 rounded"
+            placeholder="Título da música"
+            value={formData.title}
             onChange={(e) =>
-              setFormData({ ...formData, artist: e.target.value })
+              setFormData({ ...formData, title: e.target.value })
             }
           />
+        </div>
+        <div className="flex gap-2">
+          <div className="relative flex-1 group">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+            className="lucide lucide-user-star-icon lucide-user-star absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-brand-green transition-colors">
+            <path d="M16.051 12.616a1 1 0 0 1 1.909.024l.737 1.452a1 1 0 0 0 .737.535l1.634.256a1 1 0 0 1 .588 1.806l-1.172 1.168a1 1 0 0 0-.282.866l.259 1.613a1 1 0 0 1-1.541 1.134l-1.465-.75a1 1 0 0 0-.912 0l-1.465.75a1 1 0 0 1-1.539-1.133l.258-1.613a1 1 0 0 0-.282-.866l-1.156-1.153a1 1 0 0 1 .572-1.822l1.633-.256a1 1 0 0 0 .737-.535z"/>
+            <path d="M8 15H7a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/></svg>
+            <input
+              className="w-full flex-1 p-2 pl-10 mx-auto bg-zinc-900 rounded"
+              placeholder="Artista"
+              value={formData.artist ?? ""}
+              onChange={(e) =>
+                setFormData({ ...formData, artist: e.target.value })
+              }
+            />
+          </div>
           <button 
             type="button" 
             onClick={handleSearch}
@@ -384,7 +394,7 @@ export default function EditorClient({
                 key={type}
                 type="button"
                 onClick={() => addSection(type)}
-                className="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-white/10 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
+                className="px-2 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-white/10 rounded-lg text-xs font-medium transition-colors flex items-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5 text-emerald-500" />
                 {sectionLabels[type]}
@@ -396,7 +406,7 @@ export default function EditorClient({
               <button
                 type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="px-1.5 py-1.5 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg text-xs font-medium"
+                className="px-1.5 py-1.5 bg-emerald-800 hover:bg-emerald-900 border border-emerald-600 rounded-lg text-xs font-medium"
               >
                 {expanded ? "▲ Ver menos" : "▼ Ver mais"}
               </button>
