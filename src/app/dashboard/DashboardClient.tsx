@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus } from "lucide-react";
+import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus, Calendar, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
@@ -21,10 +21,11 @@ interface DashboardClientProps {
 }
 
 export default function DashboardClient({ user, initialSongs }: DashboardClientProps) {
-  const [tab, setTab] = useState<"songs" | "profile">("songs");
+  const [tab, setTab] = useState<"songs" | "escalas" | "profile">("songs");
   const [songs, setSongs] = useState(initialSongs);
+  const [escalas, setEscalas] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
@@ -65,6 +66,13 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
     fetchSongs();
   }, [search]);
 
+  useEffect(() => {
+    if (tab === "escalas") {
+      setLoading(true);
+      fetch("/api/schedule").then(res => res.json()).then(data => { setEscalas(data); setLoading(false); });
+    }
+  }, [tab]);
+
   return (
     <main className="bg-brand-black relative flex min-h-svh w-full flex-col overflow-hidden">
       <BeamEffect />
@@ -88,6 +96,12 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
               Minhas Músicas
             </button>
             <button 
+              onClick={() => setTab("escalas")}
+              className={`text-lg font-bold transition-colors ${tab === "escalas" ? "text-brand-green border-b-2 border-brand-green" : "text-zinc-500"}`}
+            >
+              Escalas
+            </button>
+            <button 
               onClick={() => setTab("profile")}
               className={`text-lg font-bold transition-colors ${tab === "profile" ? "text-brand-green border-b-2 border-brand-green" : "text-zinc-500"}`}
             >
@@ -95,7 +109,7 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
             </button>
           </div>
 
-          {tab === "songs" ? (
+          {tab === "songs" && (
             <div className="grid gap-4">
               <div className="relative group items-center flex">
                 <FileMinus className=" absolute left-4 top-1/3 -translate-y-1/3 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
@@ -104,7 +118,7 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                   placeholder="Buscar músicas..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="input-field w-full lg:w-96 mx-auto"
+                  className="input-field w-full mx-auto"
                 />
               </div>
               {songs.length === 0 ? (
@@ -143,7 +157,38 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                 </button>
               )}
             </div>
-          ) : (
+          )}
+
+          {tab === "escalas" && (
+            <div className="space-y-4">
+              <Link href="/schedule" className="flex items-center justify-center gap-2 p-4 bg-brand-green/10 border border-brand-green/20 rounded-2xl text-brand-green font-bold hover:bg-brand-green/20 transition-all">
+                <Plus size={20} /> GERENCIAR TODAS AS ESCALAS
+              </Link>
+              
+              {loading ? (
+                <div className="flex justify-center py-10"><Calendar className="animate-bounce text-zinc-700" /></div>
+              ) : escalas.length === 0 ? (
+                <p className="text-zinc-500 text-center py-10">Nenhuma escala para hoje.</p>
+              ) : (
+                escalas.map((escala) => (
+                  <div key={escala.id} className="glass-card p-5 flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-white uppercase">{escala.name}</h3>
+                      <p className="text-xs text-zinc-500">{escala.songs?.length || 0} músicas selecionadas</p>
+                    </div>
+                    <Link 
+                      href="/schedule" 
+                      className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-zinc-400"
+                    >
+                      <ArrowRight size={20} />
+                    </Link>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {tab === "profile" && (
             <div className="glass-card p-8 max-w-md mx-auto space-y-6">
               <div className="flex flex-col items-center gap-4 mb-4">
                 <div className="p-4 bg-brand-green/10 rounded-full border border-brand-green/20 text-brand-green">

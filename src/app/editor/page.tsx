@@ -1,38 +1,61 @@
-import EditorContent from "./EditorClient";
-import { fetchSongById } from "@/app/actions/song-actions";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import EditorClient from "./EditorClient";
 
-// 👇 tipo correto do Next 15
 type PageProps = {
   searchParams?: Promise<{ edit?: string }>;
 };
 
 export default async function EditorPage({ searchParams }: PageProps) {
-  const params = await searchParams; // 🔥 importante no Next 15
+  const user = await auth();
 
+  if (!user) {
+    redirect("/login");
+  }
+
+  const params = await searchParams;
   const editId = params?.edit;
 
-  let song: any = null;
+  let initialSong: any = null;
 
   if (editId) {
-    const data = await fetchSongById(editId);
+    // Buscamos a música garantindo que ela pertença ao usuário logado
+    // e incluímos as seções ordenadas corretamente
+    const songData = await prisma.song.findUnique({
+      where: { 
+        id: editId,
+        userId: user.id 
+      },
+      include: {
+        sections: {
+          orderBy: {
+            order: 'asc'
+          }
+        }
+      }
+    });
 
-    if (data) {
-      song = {
-        id: data.id,
-        title: data.title,
-        artist: data.artist ?? "",
-        youtubeUrl: data.youtubeUrl ?? "",
-        sections: data.sections.map((sec: any, i: number) => ({
+    if (songData) {
+      initialSong = {
+        id: songData.id,
+        title: songData.title,
+        artist: songData.artist ?? "",
+        youtubeUrl: songData.youtubeUrl ?? "",
+        sections: songData.sections.map((sec) => ({
           id: sec.id,
           type: sec.type,
           content: sec.content,
           order: sec.order,
-          color: sec.color ?? null,
-          label: `${sec.type} ${i + 1}`,
+          color: sec.color ?? undefined,
+          label: "", // O label (ex: Verso 1) é gerado dinamicamente no EditorClient
         })),
       };
+    } else {
+      // Se o ID for inválido ou a música não for do usuário, voltamos ao dashboard
+      redirect("/dashboard");
     }
   }
 
-  return <EditorContent initialSong={song} />;
+  return <EditorClient initialSong={initialSong} />;
 }

@@ -49,7 +49,7 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      await registerUser(email, password);
+      await registerUser(email, password, name);
 
       toast.success("Conta criada com sucesso!");
 

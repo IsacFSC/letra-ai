@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { signIn } from "next-auth/react";
-import { MotionFadeIn } from "@/components/motion-fade-in";
-import { BeamEffect } from "@/components/beam-effect";
+import { MotionFadeIn } from "src/components/motion-fade-in";
+import { BeamEffect } from "src/components/beam-effect";
 import { Music2, Mail, Lock, LogIn, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

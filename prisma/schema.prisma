@@ -1,67 +1,138 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [citext]
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String  @id @default(cuid())
+  email         String  @unique @db.Citext
+  passwordHash  String
+  name          String
+  emailVerified Boolean @default(false)
 
-  songs        Song[]
-  sessions     Session[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  songs       Song[]
+  playlists   Playlist[]
+  tokens      RefreshToken[]
+  emailTokens EmailVerificationToken[]
+
+  @@index([deletedAt])
 }
 
 model Song {
-  id         String   @id @default(cuid())
+  id         String  @id @default(cuid())
   title      String
   artist     String?
   youtubeUrl String?
-  userId     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lyrics     Lyrics?
-  sections   Section[]
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  lyrics        Lyrics?
+  sections      Section[]
+  playlistItems PlaylistSong[] // 👈 ESSENCIAL
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model Lyrics {
+  id      String @id @default(cuid())
+  content String @db.Text
+  songId  String @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  song Song @relation(fields: [songId], references: [id], onDelete: Cascade)
+}
+
+model Playlist {
+  id          String    @id @default(cuid())
+  name        String
+  scheduledAt DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  songs PlaylistSong[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([userId])
+  @@index([deletedAt])
+}
+
+model PlaylistSong {
+  id String @id @default(cuid())
+
+  playlistId String
+  songId     String
+
+  order Int
+
+  playlist Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  song     Song     @relation(fields: [songId], references: [id])
+
+  @@unique([playlistId, songId])
+  @@index([playlistId])
+}
+
+model Section {
+  id      String      @id @default(cuid())
+  type    SectionType
+  content String      @db.Text
+  order   Int
+  color   String?
+
+  songId String
+  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@unique([songId, order])
+  @@index([songId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(cuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
-model Lyrics {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  songId    String   @unique
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String
+  expiresAt DateTime
+  revokedAt DateTime?
+
   createdAt DateTime @default(now())
 
-  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
-}
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-model Section {
-  id        String       @id @default(cuid())
-  type      SectionType
-  content   String
-  order     Int
-  color     String?
-  songId    String
-
-  song      Song         @relation(fields: [songId], references: [id], onDelete: Cascade)
-
-  @@index([songId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  userId       String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 enum SectionType {

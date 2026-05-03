@@ -34,6 +34,7 @@ function checkRateLimit(ip: string, limit = 5, windowMs = 60000) {
 // ✅ Schema validado corretamente
 const schema = z.object({
   email: z.string().email(),
+  name: z.string().min(3).max(20),
   password: z
     .string()
     .min(8)
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
 
     // 📦 Body
     const body = await req.json();
-    const { email, password } = schema.parse(body);
+    const { email, name, password } = schema.parse(body);
 
     const normalizedEmail = email.toLowerCase().trim();
 
@@ -73,6 +74,7 @@ export async function POST(req: Request) {
         data: {
           email: normalizedEmail,
           passwordHash,
+          name,
         },
       });
     } catch (err: any) {
