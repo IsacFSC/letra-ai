@@ -156,11 +156,11 @@ export default function EscalaClient() {
   // Renderização da Tela de Edição
   if (editingPlaylist) {
     return (
-      <main className="bg-brand-black min-h-screen relative p-6 pb-24">
+      <main className="bg-brand-black min-h-screen relative p-4 sm:p-6 pb-32">
         <BeamEffect />
         <MotionFadeIn>
           <div className="max-w-2xl mx-auto space-y-6">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <button 
                 onClick={() => setEditingPlaylist(null)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors text-zinc-400"
@@ -170,7 +170,7 @@ export default function EscalaClient() {
               <h2 className="text-xl font-black text-white uppercase">Editar Escala</h2>
             </div>
 
-            <div className="glass-card p-6 space-y-4">
+            <div className="glass-card p-4 sm:p-6 space-y-4">
               <div>
                 <label className="text-[10px] font-bold text-zinc-500 uppercase">Nome da Escala</label>
                 <input 
@@ -179,7 +179,7 @@ export default function EscalaClient() {
                   onChange={e => setEditingPlaylist({...editingPlaylist, name: e.target.value})}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-[10px] font-bold text-zinc-500 uppercase">Data</label>
                   <input 
@@ -201,15 +201,15 @@ export default function EscalaClient() {
               </div>
             </div>
 
-            <div className="glass-card p-6">
-              <div className="flex items-center justify-between mb-4">
+            <div className="glass-card p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-4">
                 <h3 className="text-sm font-bold text-zinc-400 flex items-center gap-2 uppercase tracking-wider">
                   <Music2 size={16} /> Músicas Selecionadas ({editingPlaylist.songs.length})
                 </h3>
                 
                 <Dialog onOpenChange={(open) => !open && setSearchTerm("")}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" className="border-brand-green/50 text-brand-green hover:bg-brand-green/10 hover:text-brand-green rounded-xl font-bold">
+                    <Button variant="outline" className="w-full sm:w-auto border-brand-green/50 text-brand-green hover:bg-brand-green/10 hover:text-brand-green rounded-xl font-bold">
                       <Plus className="mr-2 h-4 w-4" /> SELECIONAR MÚSICAS
                     </Button>
                   </DialogTrigger>
@@ -293,7 +293,7 @@ export default function EscalaClient() {
             <button 
               onClick={saveEscala}
               disabled={isSaving}
-              className="w-full py-1.5 bg-brand-green text-black font-bold rounded-2xl hover:bg-green-400 transition-all flex items-center justify-center gap-2"
+              className="w-full py-4 bg-brand-green text-black font-black rounded-2xl hover:bg-green-400 transition-all flex items-center justify-center gap-2"
             >
               {isSaving ? <Loader2 className="animate-spin" /> : <><Check /> SALVAR ESCALA</>}
             </button>
@@ -304,7 +304,7 @@ export default function EscalaClient() {
   }
 
   return (
-    <main className="bg-brand-black min-h-screen relative p-6 pb-24">
+    <main className="bg-brand-black min-h-screen relative p-4 sm:p-6 pb-32">
       <BeamEffect />
 
       <MotionFadeIn>
