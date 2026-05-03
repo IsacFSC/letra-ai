@@ -20,6 +20,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { getUserSongs } from "@/app/actions/song-actions";
 
 interface PlaylistSong {
   id: string;
@@ -42,6 +43,7 @@ export default function EscalaClient() {
   const [editingPlaylist, setEditingPlaylist] = useState<DailyPlaylist | null>(null);
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [playlistSearch, setPlaylistSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -51,8 +53,13 @@ export default function EscalaClient() {
   }, []);
 
   const fetchAvailableSongs = async () => {
-    const res = await fetch("/api/songs"); // Rota que retorna todas as letras do user
-    if (res.ok) setAvailableSongs(await res.json());
+    try {
+      // Usamos a Server Action diretamente para buscar as músicas do banco
+      const songs = await getUserSongs({ take: 100 });
+      setAvailableSongs(songs as PlaylistSong[]);
+    } catch (error) {
+      console.error("Erro ao carregar músicas:", error);
+    }
   };
 
   const fetchPlaylists = async () => {
@@ -152,6 +159,15 @@ export default function EscalaClient() {
     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (song.artist?.toLowerCase() || "").includes(searchTerm.toLowerCase())
   );
+
+  const filteredPlaylists = playlists.filter(pl => {
+    const searchLower = playlistSearch.toLowerCase();
+    return (
+      pl.name.toLowerCase().includes(searchLower) ||
+      pl.songs.some(s => s.title.toLowerCase().includes(searchLower)) ||
+      pl.songs.some(s => (s.artist?.toLowerCase() || "").includes(searchLower))
+    );
+  });
 
   // Renderização da Tela de Edição
   if (editingPlaylist) {
@@ -326,6 +342,18 @@ export default function EscalaClient() {
             </div>
           </div>
 
+          {/* Filtro de busca de escalas */}
+          <div className="relative group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
+            <input 
+              type="text" 
+              placeholder="Buscar escala, música ou artista..."
+              className="w-full h-14 pl-12 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-brand-green focus:outline-none text-white placeholder:text-zinc-500 transition"
+              value={playlistSearch}
+              onChange={(e) => setPlaylistSearch(e.target.value)}
+            />
+          </div>
+
           {/* Criar */}
           <button
             onClick={startNewPlaylist}
@@ -341,15 +369,15 @@ export default function EscalaClient() {
               <div className="flex justify-center py-20">
                 <Loader2 className="animate-spin text-brand-green w-10 h-10" />
               </div>
-            ) : playlists.length === 0 ? (
+            ) : filteredPlaylists.length === 0 ? (
               <div className="text-center py-20">
                 <Music2 className="mx-auto h-12 w-12 text-zinc-700 mb-4" />
                 <p className="text-zinc-500 font-medium">
-                  Nenhuma escala criada ainda.
+                  {playlistSearch ? "Nenhuma escala encontrada para esta busca." : "Nenhuma escala criada ainda."}
                 </p>
               </div>
             ) : (
-              playlists.map((pl) => (
+              filteredPlaylists.map((pl) => (
                 <div
                   key={pl.id}
                   className="glass-card overflow-hidden border-white/5 bg-zinc-900/40"

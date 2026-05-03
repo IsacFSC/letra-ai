@@ -38,7 +38,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="bg-brand-black relative flex min-h-[100svh] w-full items-center justify-center overflow-hidden p-6">
+    <main className="bg-brand-black relative mx-auto flex min-h-[100svh] w-full items-center justify-center overflow-hidden p-6">
       <BeamEffect />
 
       <MotionFadeIn>
@@ -55,39 +55,41 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <form className="space-y-4" onSubmit={handleLogin}>
-            <div className="space-y-1.5">
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
-                <input 
-                  type="email" 
-                  className="input-field"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
+          <form 
+            className="w-full max-w-md mx-auto px-4 flex flex-col gap-4" 
+            onSubmit={handleLogin}
+          >
+            {/* Email */}
+            <div className="relative group">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
+              <input 
+                type="email" 
+                className="w-full h-14 pl-12 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-brand-green focus:outline-none text-white placeholder:text-zinc-500 transition"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
 
-            <div className="space-y-1.5">
-              <div className="relative group">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
-                <input 
-                  type="password" 
-                  className="input-field"
-                  placeholder="Sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
+            {/* Senha */}
+            <div className="relative group">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
+              <input 
+                type="password" 
+                className="w-full h-14 pl-12 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-brand-green focus:outline-none text-white placeholder:text-zinc-500 transition"
+                placeholder="Sua senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
 
+            {/* Botão */}
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full bg-brand-green hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-black py-4 rounded-2xl transition-all shadow-[0_10px_30px_rgba(34,197,94,0.2)] active:scale-[0.97] flex items-center justify-center gap-2 mt-4"
+              className="w-full h-14 bg-brand-green hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

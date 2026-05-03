@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus, Calendar, ArrowRight } from "lucide-react";
+import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus, Calendar, ArrowRight, Search } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
@@ -25,6 +25,7 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
   const [songs, setSongs] = useState(initialSongs);
   const [escalas, setEscalas] = useState<any[]>([]);
   const [search, setSearch] = useState("");
+  const [searchEscalas, setSearchEscalas] = useState("");
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -164,13 +165,29 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
               <Link href="/schedule" className="flex items-center justify-center gap-2 p-4 bg-brand-green/10 border border-brand-green/20 rounded-2xl text-brand-green font-bold hover:bg-brand-green/20 transition-all">
                 <Plus size={20} /> GERENCIAR TODAS AS ESCALAS
               </Link>
+
+              {/* Filtro de busca de escalas no Dashboard */}
+              <div className="relative group">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
+                <input
+                  type="text"
+                  placeholder="Buscar escalas por nome..."
+                  value={searchEscalas}
+                  onChange={(e) => setSearchEscalas(e.target.value)}
+                  className="input-field w-full pl-12"
+                />
+              </div>
               
               {loading ? (
                 <div className="flex justify-center py-10"><Calendar className="animate-bounce text-zinc-700" /></div>
               ) : escalas.length === 0 ? (
                 <p className="text-zinc-500 text-center py-10">Nenhuma escala para hoje.</p>
               ) : (
-                escalas.map((escala) => (
+                escalas
+                  .filter(escala => 
+                    escala.name.toLowerCase().includes(searchEscalas.toLowerCase())
+                  )
+                  .map((escala) => (
                   <div key={escala.id} className="glass-card p-5 flex items-center justify-between">
                     <div>
                       <h3 className="font-bold text-white uppercase">{escala.name}</h3>
