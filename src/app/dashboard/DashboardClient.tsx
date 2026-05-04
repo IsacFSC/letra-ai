@@ -8,6 +8,17 @@ import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMin
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/components/ui/alert-dialog";
 
 type Song = {
   id: string;
@@ -31,8 +42,6 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
   const [loadingId, setLoadingId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem certeza?")) return;
-
     setLoadingId(id);
 
     try {
@@ -43,6 +52,23 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
       toast.error("Erro ao excluir.");
     } finally {
       setLoadingId(null);
+    }
+  };
+
+  const handleDeleteEscala = async (id: string) => {
+    try {
+      const res = await fetch(`/api/schedule?id=${id}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setEscalas((prev) => prev.filter((e) => e.id !== id));
+        toast.success("Escala removida!");
+      } else {
+        toast.error("Erro ao excluir escala.");
+      }
+    } catch {
+      toast.error("Erro de conexão.");
     }
   };
 
@@ -141,9 +167,30 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                       <Link href={`/editor?edit=${song.id}`} title="Editar Letra" className="p-2 bg-white/10 hover:bg-white/8 rounded-lg hover:text-blue-400 transition-colors">
                         <Edit3 className="h-5 w-5" />
                       </Link>
-                      <button onClick={() => handleDelete(song.id)} className="p-2 bg-white/10 hover:bg-white/8 rounded-lg hover:text-red-500 transition-colors" disabled={loadingId === song.id}>
-                        <Trash2 className="h-5 w-5" />
-                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="p-2 bg-white/10 hover:bg-white/8 rounded-lg hover:text-red-500 transition-colors" disabled={loadingId === song.id}>
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-zinc-950 border border-white/10 text-white">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir música?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-zinc-400">
+                              Tem certeza que deseja remover "{song.title}"? Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white rounded-xl">Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDelete(song.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white border-none rounded-xl"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 ))
@@ -193,12 +240,38 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
                       <h3 className="font-bold text-white uppercase">{escala.name}</h3>
                       <p className="text-xs text-zinc-500">{escala.songs?.length || 0} músicas selecionadas</p>
                     </div>
-                    <Link 
-                      href="/schedule" 
-                      className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-zinc-400"
-                    >
-                      <ArrowRight size={20} />
-                    </Link>
+                    <div className="flex gap-2">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="p-2 bg-white/5 rounded-lg hover:text-red-500 transition-colors">
+                            <Trash2 className="h-5 w-5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-zinc-950 border border-white/10 text-white">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Excluir escala?</AlertDialogTitle>
+                            <AlertDialogDescription className="text-zinc-400">
+                              Tem certeza que deseja remover a escala "{escala.name}"? Esta ação não pode ser desfeita.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white rounded-xl">Cancelar</AlertDialogCancel>
+                            <AlertDialogAction 
+                              onClick={() => handleDeleteEscala(escala.id)}
+                              className="bg-red-600 hover:bg-red-700 text-white border-none rounded-xl"
+                            >
+                              Excluir
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      <Link 
+                        href="/schedule" 
+                        className="p-2 bg-white/5 rounded-full hover:bg-white/10 text-zinc-400"
+                      >
+                        <ArrowRight size={20} />
+                      </Link>
+                    </div>
                   </div>
                 ))
               )}

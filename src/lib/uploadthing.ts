@@ -11,14 +11,11 @@ if (typeof window === "undefined") {
 
 export const saveRepertoryLocally = async (file: File): Promise<{ url: string }[]> => {
   try {
-    console.log("Salvando repertório localmente...");
     saveAs(file, "repertorio.pdf");
-    console.log("Repertório salvo com sucesso.");
 
     // Retornar um array com um objeto contendo a URL fictícia
     return [{ url: "local/repertorio.pdf" }];
   } catch (error) {
-    console.error("Falha ao salvar o repertório localmente:", error);
     throw error;
   }
 };

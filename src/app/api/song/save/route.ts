@@ -68,7 +68,6 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
-    console.error("[SAVE_SONG_ERROR]:", error);
     return NextResponse.json({ error: "Erro ao salvar no banco de dados" }, { status: 500 });
   }
 }

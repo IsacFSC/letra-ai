@@ -3,7 +3,7 @@ import React from "react";
 import { signIn } from "next-auth/react";
 import { MotionFadeIn } from "src/components/motion-fade-in";
 import { BeamEffect } from "src/components/beam-effect";
-import { Music2, Mail, Lock, LogIn, Loader2 } from "lucide-react";
+import { Music2, Mail, Lock, LogIn, Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showPassword, setShowPassword] = React.useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,13 +77,20 @@ export default function LoginPage() {
             <div className="relative group">
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400 group-focus-within:text-brand-green transition-colors" />
               <input 
-                type="password" 
-                className="w-full h-14 pl-12 pr-4 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-brand-green focus:outline-none text-white placeholder:text-zinc-500 transition"
+                type={showPassword ? "text" : "password"}
+                className="w-full h-14 pl-12 pr-12 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-brand-green focus:outline-none text-white placeholder:text-zinc-500 transition"
                 placeholder="Sua senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition-colors"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
 
             {/* Botão */}

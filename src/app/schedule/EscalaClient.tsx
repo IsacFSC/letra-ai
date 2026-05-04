@@ -16,10 +16,21 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+} from "@/components/components/ui/dialog";
+import { Checkbox } from "@/components/components/ui/checkbox";
+import { Input } from "@/components/components/ui/input";
+import { Button } from "@/components/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/components/ui/alert-dialog";
 import { getUserSongs } from "@/app/actions/song-actions";
 
 interface PlaylistSong {
@@ -57,8 +68,8 @@ export default function EscalaClient() {
       // Usamos a Server Action diretamente para buscar as músicas do banco
       const songs = await getUserSongs({ take: 100 });
       setAvailableSongs(songs as PlaylistSong[]);
-    } catch (error) {
-      console.error("Erro ao carregar músicas:", error);
+    } catch {
+      toast.error("Erro ao carregar músicas disponíveis");
     }
   };
 
@@ -116,10 +127,8 @@ export default function EscalaClient() {
   };
 
   const deletePlaylist = async (id: string) => {
-    if (!confirm("Excluir esta escala?")) return;
-
     try {
-      const res = await fetch(`/api/schedule/${id}`, {
+      const res = await fetch(`/api/schedule?id=${id}`, {
         method: "DELETE",
       });
 
@@ -402,12 +411,34 @@ export default function EscalaClient() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => deletePlaylist(pl.id)}
-                      className="p-2 text-zinc-600 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-2 text-zinc-600 hover:text-red-500 transition-colors"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-zinc-950 border border-white/10 text-white">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir escala?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-zinc-400">
+                            Esta ação não pode ser desfeita. Isso excluirá permanentemente a escala "{pl.name}".
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white rounded-xl">Cancelar</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => deletePlaylist(pl.id)}
+                            className="bg-red-600 hover:bg-red-700 text-white border-none rounded-xl"
+                          >
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                   </div>
 
                   {/* Songs */}

@@ -2,8 +2,12 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeftIcon, Mic2Icon, Pause, Play, TargetIcon, TestTube } from "lucide-react";
-import { Updock } from "next/font/google";
+import {
+  ArrowLeftIcon,
+  Mic2Icon,
+  XSquareIcon,
+  Youtube,
+} from "lucide-react";
 
 // 🎨 cores por tipo
 const sectionColors: Record<string, string> = {
@@ -44,10 +48,22 @@ type Song = {
 export default function StagePageClient({ song }: { song: Song }) {
   const router = useRouter();
 
-  const [fontSize, setFontSize] = useState(24);
+  const [fontSize, setFontSize] = useState(20);
   const [autoScroll, setAutoScroll] = useState(false);
-  const [speed, setSpeed] = useState(0.0);
+  const [speed] = useState(30); // Velocidade fixa padrão
   const [focusMode, setFocusMode] = useState(false);
+  const [showYoutube, setShowYoutube] = useState(false);
+
+  // Extrai o ID do vídeo e gera a URL de embed
+  const embedUrl = React.useMemo(() => {
+    if (!song.youtubeUrl) return null;
+    const regExp =
+      /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = song.youtubeUrl.match(regExp);
+    return match && match[2].length === 11
+      ? `https://www.youtube.com/embed/${match[2]}`
+      : null;
+  }, [song.youtubeUrl]);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -117,11 +133,18 @@ export default function StagePageClient({ song }: { song: Song }) {
                 {song.artist}
             </p>
           </div>
-          <button 
-            className="ml-auto bg-white/15 px-1.5 py-1 text-xs rounded"
-            onClick={() => setFocusMode(true)}>
-            <Mic2Icon className="h-6 w-6 text-emerald-500" />
-          </button>
+        </div>
+      )}
+
+      {/* PLAYER DE YOUTUBE (MODO EMBED) */}
+      {showYoutube && embedUrl && (
+        <div className="w-full aspect-video bg-black border-b border-white/10 shrink-0">
+          <iframe
+            src={`${embedUrl}?autoplay=1&modestbranding=1&rel=0`}
+            className="w-full h-full"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowFullScreen
+          />
         </div>
       )}
 
@@ -161,59 +184,47 @@ export default function StagePageClient({ song }: { song: Song }) {
         <div className="fixed bottom-0 left-0 right-0 bg-black border-t border-white/10 p-3 flex flex-wrap gap-2 items-center justify-between">
           
           {/* fonte */}
-          <div className="flex gap-2 items-start">
-            <button className="rounded-full px-1.5 py-1 font-serif border border-white bg-zinc-800" onClick={() => setFontSize((s) => Math.max(18, s - 2))}>
-              A-
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFontSize((s) => Math.max(18, s - 2))}
+              className="flex items-center justify-center w-11 h-11 rounded-full 
+                        bg-zinc-800 border border-white text-white text-lg font-semibold
+                        active:scale-95 active:bg-zinc-700 transition"
+            >
+              A−
             </button>
-            <button className="rounded-full px-1 py-1 font-serif border border-white bg-zinc-800" onClick={() => setFontSize((s) => Math.min(48, s + 2))}>
+
+            <span className="text-sm text-zinc-300 min-w-[40px] text-center">
+              {fontSize}
+            </span>
+
+            <button
+              onClick={() => setFontSize((s) => Math.min(48, s + 2))}
+              className="flex items-center justify-center w-11 h-11 rounded-full 
+                        bg-zinc-800 border border-white text-white text-lg font-semibold
+                        active:scale-95 active:bg-zinc-700 transition"
+            >
               A+
             </button>
           </div>
 
-          {/* play scroll */}
-          <button
-            onClick={() => setAutoScroll((v) => !v)}
-            className="rounded-full bg-white/10"
-            >
-            {autoScroll ? <Pause size={18} /> : <Play size={18} />}
+          <button 
+            className="ml-auto bg-white/15 px-1.5 py-1 text-xs rounded"
+            onClick={() => setFocusMode(true)}>
+            <Mic2Icon className="h-6 w-6 text-emerald-500" />
           </button>
-          <div className="block justify-center mx-auto items-center gap-2">
-            
-            {/* <Play className="w-4 h-4 text-zinc-400" /> */}
-            
-            <input
-                type="range"
-                min="10"
-                max="200"
-                step="5"
-                value={speed}
-                onChange={(e) => setSpeed(Number(e.target.value))}
-                className="flex-1 accent-emerald-500"
-            />
-
-            {/* <span className=" hidden text-xs text-zinc-400 w-12 text-right">
-                {Math.round(speed)}
-            </span> */}
-          </div>
 
           {/* youtube */}
           {song.youtubeUrl && (
-            <a
-              href={song.youtubeUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-0.5 bg-zinc-800 hover:bg-zinc-700 text-red-500 rounded-lg transition-colors"
-              aria-label="Abrir no YouTube"
+            <button
+              onClick={() => setShowYoutube(!showYoutube)}
+              className={`p-1.5 rounded-lg transition-all ${
+                showYoutube ? "bg-red-600 text-white" : "bg-zinc-800 hover:bg-zinc-700 text-red-500"
+              }`}
+              aria-label={showYoutube ? "Fechar player" : "Abrir player"}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-6 h-6"
-              >
-                <path d="M21.8 8s-.2-1.4-.8-2c-.7-.8-1.5-.8-1.9-.9C16.4 5 12 5 12 5h0s-4.4 0-7.1.1c-.4.1-1.2.1-1.9.9-.6.6-.8 2-.8 2S2 9.6 2 11.2v1.6C2 14.4 2.2 16 2.2 16s.2 1.4.8 2c.7.8 1.6.8 2 .9 1.5.1 6.9.1 6.9.1s4.4 0 7.1-.1c.4-.1 1.2-.1 1.9-.9.6-.6.8-2 .8-2s.2-1.6.2-3.2v-1.6C22 9.6 21.8 8 21.8 8zM9.8 14.6V9.4l5.2 2.6-5.2 2.6z" />
-              </svg>
-            </a>
+              <Youtube className="w-6 h-6" />
+            </button>
           )}
 
             {/* foco
@@ -244,9 +255,9 @@ export default function StagePageClient({ song }: { song: Song }) {
       {focusMode && (
         <button
           onClick={() => setFocusMode(false)}
-          className="fixed top-4 right-4 bg-white/10 px-3 py-1 text-xs rounded"
+          className="fixed top-4 right-4 px-3 py-1 text-xs rounded"
         >
-          sair
+          <XSquareIcon className="h-6 w-6 text-emerald-500" />
         </button>
       )}
     </main>

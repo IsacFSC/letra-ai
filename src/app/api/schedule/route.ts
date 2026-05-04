@@ -99,7 +99,40 @@ export async function POST(req: Request) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ error: "Erro ao salvar escala" }, { status: 400 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  const user = await auth();
+  if (!user) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID da escala é obrigatório" }, { status: 400 });
+    }
+
+    // Transação para deletar relações e o registro principal
+    await prisma.$transaction(async (tx) => {
+      // 1. Remove as músicas vinculadas a esta escala (PlaylistSong)
+      await tx.playlistSong.deleteMany({
+        where: { playlistId: id },
+      });
+
+      // 2. Remove a escala (Playlist), validando a posse do usuário
+      await tx.playlist.delete({
+        where: { 
+          id,
+          userId: user.id 
+        },
+      });
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Erro ao excluir escala" }, { status: 500 });
   }
 }
