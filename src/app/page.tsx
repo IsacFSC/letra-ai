@@ -1,9 +1,21 @@
-"use client";
-
 import { MotionFadeIn } from "@/components/motion-fade-in";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, ArrowRight, Star } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Letra.AI - Sua Plataforma de Repertório",
+  description: "Organize seu repertório musical e brilhe no palco.",
+  openGraph: {
+    title: "Letra.AI",
+    description: "A plataforma definitiva para cantores e músicos.",
+    url: "https://letra-ai.vercel.app/",
+    siteName: "Letra.AI",
+    images: [{ url: "https://letra-ai.vercel.app/brand/letra-ai-icon.png", width: 1024, height: 1024 }],
+    type: "website",
+  },
+};
 
 export default function LandingPage() {
   return (

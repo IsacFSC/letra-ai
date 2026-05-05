@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import { MotionFadeIn } from "@/components/motion-fade-in";
+import { motion, AnimatePresence } from "framer-motion";
 import { BeamEffect } from "@/components/beam-effect";
-import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus, Calendar, ArrowRight, Search } from "lucide-react";
+import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMinus, Calendar, ArrowRight, Search, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
@@ -40,6 +41,16 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const handleSignOut = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut({ callbackUrl: "/login" });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     setLoadingId(id);
@@ -109,8 +120,17 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
             <Music2 className="text-brand-green h-7 w-7" />
             <h2 className="text-gradient-gray text-2xl font-black tracking-tighter">Letra.AI</h2>
           </div>
-          <button onClick={() => signOut({ callbackUrl: "/login" })} title="Sair" className="text-zinc-400 hover:text-red-400 transition-colors">
-            <LogOut className="h-6 w-6" />
+          <button
+            onClick={handleSignOut}
+            title="Sair"
+            className="text-zinc-400 hover:text-red-400 transition-colors disabled:opacity-50"
+            disabled={isLoggingOut}
+          >
+            {isLoggingOut ? (
+              <Loader2 className="h-6 w-6 animate-spin" />
+            ) : (
+              <LogOut className="h-6 w-6" />
+            )}
           </button>
         </nav>
 
@@ -305,6 +325,36 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
           <Plus className="h-6 w-6" /> NOVA MÚSICA
         </Link>
       </div>
+
+      {/* Overlay de Logout Moderno (UX Senior) */}
+      <AnimatePresence>
+        {isLoggingOut && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/60 backdrop-blur-xl"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="flex flex-col items-center"
+            >
+              <div className="relative mb-6">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                  className="h-20 w-20 rounded-full border-t-2 border-brand-green border-r-2 border-r-transparent"
+                />
+                <Music2 className="absolute left-1/2 top-1/2 h-10 w-10 -translate-x-1/2 -translate-y-1/2 text-brand-green" />
+              </div>
+              
+              <h2 className="text-gradient-gray text-xl font-bold tracking-tight">Saindo com segurança</h2>
+              <p className="mt-2 text-sm font-medium text-zinc-400">Até a próxima performance!</p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

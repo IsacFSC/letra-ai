@@ -1,8 +1,6 @@
 # Letra.AI 🎤 - Sua Plataforma Inteligente de Repertório Musical
 
-[![Letra.AI Logo](public/brand/letra-ai-icon.png)](https://github.com/seu-usuario/seu-repositorio)
-_Substitua `seu-usuario/seu-repositorio` pelo link real do seu repositório no GitHub._
-_A imagem `public/brand/letra-ai-icon.png` será usada como logo._
+[![Letra.AI Logo](public/brand/letra-ai-icon.png)](https://github.com/IsacFSC/letra-ai)
 
 ## ✨ Visão Geral do Projeto
 
@@ -82,7 +80,7 @@ Siga estas instruções para configurar e executar o projeto em sua máquina loc
 
 1.  **Clone o repositório:**
     ```bash
-    git clone <https://github.com/seu-usuario/seu-repositorio.git>
+    git clone <https://github.com/IsacFSC/letra-ai.git>
     cd letra-ai
     ```
 
@@ -125,9 +123,8 @@ Siga estas instruções para configurar e executar o projeto em sua máquina loc
 
 Estou ativamente buscando minha primeira oportunidade como desenvolvedor frontend React. Sinta-se à vontade para entrar em contato!
 
--   **LinkedIn**: Seu Perfil do LinkedIn
--   **GitHub**: Seu Perfil do GitHub
--   **Email**: seu.email@example.com
+-   **LinkedIn**: [Isac Freitas](https://www.linkedin.com/in/isac-freitas-502a42289)
+-   **GitHub**: [IsacFSC](https://github.com/IsacFSC)
 
 ---
 
