@@ -5,15 +5,23 @@ import Link from "next/link";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://letra-ai.vercel.app"),
   title: "Letra.AI - Sua Plataforma de Repertório",
   description: "Organize seu repertório musical e brilhe no palco.",
   openGraph: {
     title: "Letra.AI",
     description: "A plataforma definitiva para cantores e músicos.",
-    url: "https://letra-ai.vercel.app/",
+    url: "/",
     siteName: "Letra.AI",
-    images: [{ url: "https://letra-ai.vercel.app/brand/letra-ai-icon.png", width: 1024, height: 1024 }],
+    images: [{ url: "/brand/letra-ai-icon.png", width: 1024, height: 1024 }],
+    locale: "pt_BR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Letra.AI",
+    description: "A plataforma definitiva para cantores e músicos.",
+    images: ["/brand/letra-ai-icon.png"],
   },
 };
 

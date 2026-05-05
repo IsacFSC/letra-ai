@@ -114,8 +114,6 @@ export const authOptions: NextAuthOptions = {
       },
 
       async authorize(credentials, req) {
-        console.log("DEBUG [authorize]: Credentials recebidas:", credentials);
-
         /**
          * 🌐 IP detectado via objeto 'req' (estável para authorize no NextAuth v4)
          * Resolve: "Cannot read private member #headersList"
@@ -124,13 +122,11 @@ export const authOptions: NextAuthOptions = {
         const ip = typeof forwarded === "string" 
           ? forwarded.split(",")[0] 
           : "unknown";
-        console.log("DEBUG [authorize]: Header IP:", ip);
 
         /**
          * 🚫 Rate limit
          */
         const rl = await rateLimit(ip);
-        console.log("DEBUG [authorize]: Resultado do Rate Limit:", rl);
         if (!rl.success) {
           throw new Error("Too many requests");
         }
@@ -139,7 +135,6 @@ export const authOptions: NextAuthOptions = {
          * ✅ Validação
          */
         const parsed = loginSchema.safeParse(credentials);
-        console.log("DEBUG [authorize]: Resultado da validação Zod:", parsed);
         if (!parsed.success) return null;
 
         const { email, password } = parsed.data;
@@ -151,14 +146,6 @@ export const authOptions: NextAuthOptions = {
           // Normaliza o email para minúsculas e remove espaços em branco
           where: { email: email.toLowerCase().trim() },
         });
-
-        if (user) {
-          console.log("DEBUG [authorize]: Usuário encontrado no banco:", 
-            { id: user.id, email: user.email, name: user.name });
-        }
-        // Loga também se o usuário não foi encontrado para depuração
-        else { console.log("DEBUG [authorize]: Usuário NÃO encontrado no banco para o email:", email); }
-
         /**
          * 🔐 Timing-safe compare
          */
@@ -167,7 +154,6 @@ export const authOptions: NextAuthOptions = {
         const isValid = await bcrypt.compare(password, hash);
 
         if (!user || !isValid) {
-          console.log("DEBUG [authorize]: Credenciais inválidas para o email:", email);
           // Incrementa a contagem de falhas para o rate limiting
           const currentAttempt = loginAttempts.get(ip);
           if (currentAttempt) {
@@ -183,7 +169,6 @@ export const authOptions: NextAuthOptions = {
         /**
          * ✅ Retorno mínimo necessário
          */
-        console.log("DEBUG [authorize]: Login bem-sucedido. Retornando usuário:", { id: user.id, email: user.email, name: user.name });
         return { id: user.id, email: user.email, name: user.name};
       },
     }),
@@ -194,17 +179,12 @@ export const authOptions: NextAuthOptions = {
      * 🧠 JWT
      */
     async jwt({ token, user }) {
-      console.log("DEBUG [callback:jwt]: Antes da mutação - Token (recebido):", token);
-      console.log("DEBUG [callback:jwt]: Usuário disponível (do provedor/authorize):", user);
-
       if (user) {
         token.id = user.id;
         token.email = user.email;
         // Adiciona name ao token JWT
         token.name = user.name;
       }
-
-      console.log("DEBUG [callback:jwt]: Depois da mutação - Token:", token);
       return token;
     },
 
@@ -212,9 +192,6 @@ export const authOptions: NextAuthOptions = {
      * 👤 Session
      */
     async session({ session, token }) {
-      console.log("DEBUG [session]: before", session);
-      console.log("DEBUG [session]: token", token);
-
       if (session.user) {
         if (typeof token.id === "string") {
           session.user.id = token.id;
@@ -228,8 +205,6 @@ export const authOptions: NextAuthOptions = {
           session.user.name = token.name;
         }
       }
-
-      console.log("DEBUG [session]: after", session);
       return session;
     }
   },
