@@ -7,6 +7,7 @@ import { Music2, Mail, Lock, LogIn, Loader2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { MusicLoader } from "@/components/MusicLoader";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,8 +16,10 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (isLoading) return;
     setIsLoading(true);
 
     try {
@@ -27,16 +30,32 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
-        toast.error("Por favor, verifique seu e-mail e senha e tente novamente.");
-      } else {
-        toast.success("Login realizado com sucesso!");
-        router.push("/dashboard");
-        router.refresh();
+        toast.error("Por favor, verifique seu e-mail e senha.");
+        setIsLoading(false);
+        return;
       }
-    } finally {
+
+      // 🔥 navegação controlada (sem histórico)
+      router.replace("/dashboard");
+
+      // 🔥 força sincronização da sessão
+      router.refresh();
+
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro inesperado.");
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black">
+        <MusicLoader />
+        <p className="mt-6 text-sm text-zinc-400">Entrando na conta...</p>
+      </div>
+    );
+  }
 
   return (
     <main className="bg-brand-black relative mx-auto flex min-h-[100svh] w-full items-center justify-center overflow-hidden p-6">
@@ -97,7 +116,7 @@ export default function LoginPage() {
             <button 
               type="submit"
               disabled={isLoading}
-              className="w-full h-14 bg-brand-green hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl transition-all shadow-md active:scale-[0.98] flex items-center justify-center gap-2 mt-2"
+              className="w-full h-14 bg-brand-green hover:bg-green-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold rounded-xl shadow-md active:scale-[0.98] flex items-center justify-center gap-2 mt-2 transition-transform"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

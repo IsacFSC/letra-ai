@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const isFormValid =
     name && email && isPasswordValid && passwordsMatch;
 
-  async function handleRegister(e: React.FormEvent) {
+  async function handleRegister(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     if (!isPasswordValid) {

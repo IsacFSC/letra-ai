@@ -9,6 +9,7 @@ import { Music2, UserCircle, LogOut, Trash2, Edit3, Key, Plus, MicVocal, FileMin
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { deleteSong, getUserSongs } from "@/app/actions/song-actions";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +21,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/components/ui/alert-dialog";
+import { MusicLoader } from "@/components/MusicLoader";
 
 type Song = {
   id: string;
@@ -41,13 +43,25 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
   const [loading, setLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleSignOut = async () => {
+    if (isLoggingOut) return;
+
+    setIsLoggingOut(true);
+
     try {
-      setIsLoggingOut(true);
-      await signOut({ callbackUrl: "/login" });
-    } finally {
+      // evita redirect automático do next-auth
+      await signOut({ redirect: false });
+
+      // 🔥 redirect imediato sem flicker
+      router.replace("/login");
+
+      // 🔥 garante que sessão/cache sejam invalidados
+      router.refresh();
+    } catch (err) {
+      console.error("Erro ao sair:", err);
       setIsLoggingOut(false);
     }
   };
@@ -111,6 +125,15 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
     }
   }, [tab]);
 
+  if (isLoggingOut) {
+  return (
+    <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-black">
+      <MusicLoader />
+      <p className="mt-6 text-sm text-zinc-400">Saindo da conta...</p>
+    </div>
+  );
+}
+
   return (
     <main className="bg-brand-black relative flex min-h-svh w-full flex-col overflow-hidden">
       <BeamEffect />
@@ -122,15 +145,11 @@ export default function DashboardClient({ user, initialSongs }: DashboardClientP
           </div>
           <button
             onClick={handleSignOut}
-            title="Sair"
+            aria-label="Sair da conta"
             className="text-zinc-400 hover:text-red-400 transition-colors disabled:opacity-50"
             disabled={isLoggingOut}
           >
-            {isLoggingOut ? (
-              <Loader2 className="h-6 w-6 animate-spin" />
-            ) : (
-              <LogOut className="h-6 w-6" />
-            )}
+            <LogOut className="h-6 w-6" />
           </button>
         </nav>
 

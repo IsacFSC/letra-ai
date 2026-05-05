@@ -3,6 +3,8 @@ import { BeamEffect } from "@/components/beam-effect";
 import { ArrowRight, Star } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://letra-ai.vercel.app"),
@@ -13,7 +15,7 @@ export const metadata: Metadata = {
     description: "A plataforma definitiva para cantores e músicos.",
     url: "/",
     siteName: "Letra.AI",
-    images: [{ url: "/brand/letra-ai-icon.png", width: 1024, height: 1024 }],
+    images: [{ url: "/brand/letra-ai-icon.jpg", width: 1024, height: 1024 }],
     locale: "pt_BR",
     type: "website",
   },
@@ -21,11 +23,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Letra.AI",
     description: "A plataforma definitiva para cantores e músicos.",
-    images: ["/brand/letra-ai-icon.png"],
+    images: ["/brand/letra-ai-icon.jpg"],
   },
 };
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const session = await auth();
+  if (session) redirect("/dashboard");
+
   return (
     <main className="bg-brand-black relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden p-6">
       <BeamEffect />
